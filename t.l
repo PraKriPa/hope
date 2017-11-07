@@ -1267,3 +1267,46 @@ def NQueens(k):
 
 
 NQueens(1)
+
+Binary C
+
+#include<stdio.h>
+#include<stdlib.h>
+
+//Recursive Binary Search to be applied on sorted array
+
+int Binary_search(int search,int *a,int start,int end)
+{
+
+	if(start>end) //condition to stop the search and return not found
+		return 0;
+	int mid=(start+end)/2; //caluclating the mid position
+	
+	if(search>a[mid])//recursive calling right binary Search 
+		Binary_search(search,a,mid+1,end);
+	else if(search<a[mid])//Recursive calling left binary search
+		Binary_search(search,a,start,mid-1);
+	else if(a[mid]==search)//If found returning 1
+		return 1;	
+}
+
+int main()
+{
+	int a[10], search, n;
+	printf("\n\nEnter the 10 elements: ");
+	for(int i=0; i<10; i++)
+		{
+			scanf("%d",&n);
+			a[i]=n;
+		}
+	
+	printf("\n\nEnter the search element: ");
+	scanf("%d",&search);
+	
+	int found=Binary_search(search,a,0,9);
+	
+	if(found)
+		printf("\n\nFound\n");
+	else
+	 	printf("\n\nNot Found\n");
+}
