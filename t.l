@@ -78,6 +78,258 @@ int main(int argc, char **argv)
 int yywrap()
 {return(1);}
 
+Without using declaration and sub rountine section (include lex library at cc)
+
+%%
+[A-Za-z] printf("\nLetter: %s",yytext);//Variable yytext is a pointer to the matched string (NULL-terminated)
+[0-9] printf("\nDigit: %s",yytext);
+%%
+
+Noun Pronoun
+
+%{
+	#include<stdio.h>//header file is declared
+%}
+%%
+
+He|She|he|she printf("\nPronoun: %s",yytext);//Variable yytext is a pointer to the matched string (NULL-terminated) ,yytext is char pointer
+Shubham|Shivam|boy printf("\nNoun: %s",yytext);
+good printf("\nAdjective: %s",yytext);
+a|an|the printf("\nArticle: %s",yytext);
+is|are|was|were {printf("\nVerb: %s",yytext);}
+[ \n\t] 
+. printf("\nSpecial character : %s\n",yytext);
+
+%%
+
+int main()
+{
+	yylex(); //call to invoke lexer, returns token(integer) ,main entry point of lex
+	
+}
+int yywrap(){};//Function yywrap is called by lex when input is exhausted. Return 1 if you are done or 0 if more processing is required.
+
+
+Lines characters
+
+%{
+	#include<stdio.h>
+	int words=0,chars=0,lines=0,vowels=0; //initialising all variable to
+%}
+%%
+a|e|i|o|u|A|E|I|O|U { chars++; vowels++;}
+[a-zA-Z0-9] {chars++;}
+[ ] {words++;}
+\n {lines++;}
+. {} //to ignore any special characters and display nothing
+    
+%%
+
+int main(int argc,char **argv)
+{
+	FILE *fp=fopen(argv[1],"r+"); //openinng the file in read mode
+	yyin=fp;// the input stream pointer (i.e it points to an input file which is to be scanned or tokenised), however the default input of default main() is stdin .
+	yylex();// implies the main entry point for lex, reads the input stream generates tokens, returns zero at the end of input stream . It is called to invoke the lexer (or scanner) and each time yylex() is called, the scanner continues processing the input from where it last left off.
+	printf("\n VOWELS: %d",vowels);
+	printf("\n CHARACTERS: %d",chars);
+	printf("\n WORDS: %d",words+lines);
+	printf("\n LINES: %d\n",lines);
+	fclose(fp);
+	return(0);
+}
+int yywrap(){}//t is called by lex when input is exhausted (or at EOF). default yywrap always return 1.
+ 
+/*	OUTPUT
+	
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ lex A4_3.l 
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ gcc lex.yy.c 
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ ./a.out abc1.txt 
+
+ VOWELS: 13
+ CHARACTERS: 32
+ WORDS: 11
+ LINES: 3
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ 
+*/
+
+find replace
+
+%{
+	#include<stdio.h>
+	#include<string.h>
+	FILE *read_f,*write_f; //readfile pointer and write file pointer
+	char find[20],replace[20];
+%}
+
+%%
+
+[a-zA-Z0-9]+ {	
+		if(strcmp(find,yytext)==0) //if the the search word is found
+			fprintf(write_f,replace); //then the search word is replaced
+		else 
+			fprintf(write_f,yytext);}// same word which was taken in yyin is written in corrected file
+[^a-zA-Z0-9] { fprintf(write_f,yytext);}//for special characters copy it as it is
+
+%%
+
+int main(int argc,char **argv)
+{
+	printf("Enter String to be find: ");
+	scanf("%s",find); //important, not to do as &find
+	printf("Enter string to be replaced with %s: ",find);
+	scanf("%s",replace);
+	read_f=fopen(argv[1],"r+");
+	write_f=fopen("corrected.txt","w");
+	
+	yyin=read_f;//yyin: the input stream pointer (i.e it points to an input file which is to be scanned or tokenised), however the default input of default main() is stdin .
+	yylex();//implies the main entry point for lex, reads the input stream generates tokens, returns zero at the end of input stream . It is called to invoke the lexer (or scanner) and each time yylex() is called, the scanner continues processing the input from where it last left off.
+	
+	fclose(read_f);
+	fclose(write_f);
+	return 0;
+}	
+int yywrap(){}//dont forget yywrap is a function else it will give some unknown error 
+
+// it is called by lex when input is exhausted (or at EOF). default yywrap always return 1.
+/*
+	OUTPUT
+	
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ lex A4_4.l
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ gcc lex.yy.c 
+A4_4.l: In function :
+A4_4.l:12:20: warning: format not a string literal and no format arguments [-Wformat-security]
+   fprintf(write_f,replace); 
+                   ^
+A4_4.l:14:4: warning: format not a string literal and no format arguments [-Wformat-security]
+   fprintf(write_f,yytext);}
+   ^
+A4_4.l:15:1: warning: format not a string literal and no format arguments [-Wformat-security]
+[^a-zA-Z0-9] { fprintf(write_f,yytext);}
+^
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ ./a.out abc1.txt
+Enter String to be find: nice
+Enter string to be replaced with nice: good
+
+
+abc1.txt
+
+Hi my name is abc
+whats up|!@
+Have a nice day
+
+corrected.txt
+
+Hi my name is abc
+whats up|!@
+Have a good day   
+
+*/
+
+uppper case lower case
+
+%{
+	#include<stdio.h>
+	#include<ctype.h>
+	#include<string.h>
+%}
+
+%%
+[a-zA-Z0-9 .]+ {                                    //regular expression to take input as a line 
+	      
+	      printf("UPPER CASE: ");
+	      int i=0;
+	      while(yytext[i])
+	     	{ 
+	      	putchar(toupper(yytext[i])); //to convert each character to uppercase
+	      	i++;
+	     	}
+	     	
+	      
+	      printf("\nLOWER CASE: ");
+	      i=0;
+	      while(yytext[i])
+	     	{ 
+	      	putchar(tolower(yytext[i])); //to convert each character to lowercase
+	      	i++;
+	     	}
+	     	
+	      printf("\nTOGGLE CASE: ");
+	      i=0;
+	      while(yytext[i])
+	     	{ 
+	     	if(islower(yytext[i]))
+	     		putchar(toupper(yytext[i]));
+	     	else
+	     		putchar(tolower(yytext[i]));
+	      	i++;
+	     	}
+	     	
+	      printf("\nSENTENCE CASE: ");
+	      if(islower(yytext[0]))
+	      		putchar(toupper(yytext[0]));
+	      else
+			putchar(yytext[0]);
+	      i=1;	
+	      while(yytext[i])
+	     	{ 
+	     		putchar(tolower(yytext[i]));
+	      		i++;
+	     	}
+	     }
+%%
+int main()
+{
+	
+	yylex();
+	return(0);
+}
+int yywrap(){}
+/*
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ lex A4_5.l
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ gcc lex.yy.c 
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ ./a.out
+My name is Shubham Singhal
+UPPER CASE: MY NAME IS SHUBHAM SINGHAL
+LOWER CASE: my name is shubham singhal
+TOGGLE CASE: mY NAME IS sHUBHAM sINGHAL
+SENTENCE CASE: My name is shubham singhal
+
+*/
+
+longest string
+
+%{
+	#include<stdio.h>
+	#include<string.h>
+	int len=0;
+	char long_String[100];
+%}
+
+%%
+[A-Za-z0-9]+ { if(len<strlen(yytext))
+	       {
+	       		len=strlen(yytext);
+	       		for(int i=0;yytext[i];i++)
+	       			long_String[i]=yytext[i];
+	       }
+	     }
+[\n] {printf("\n Longest String is %s of length %d",long_String,len);}
+%%
+int  main()
+{
+	yylex();
+	return(0);
+}
+int yywrap(){}	   
+/*
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ lex A4_6.l
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ gcc lex.yy.c 
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/website/CL1$ ./a.out
+My name is Shubham
+   
+ Longest String is Shubham of length 7 
+ */ 
+	
 Calculator
 Calci.l
 
@@ -224,3 +476,5 @@ sqrt(16);
 [1]+  Stopped                 ./a.out
 shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1/Final$
 */
+
+	
