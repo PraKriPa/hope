@@ -1310,3 +1310,86 @@ int main()
 	else
 	 	printf("\n\nNot Found\n");
 }
+
+MergeSort
+
+#include<stdio.h>
+#include<stdlib.h>
+
+int merge(int *a,int start,int mid,int end)//taking the array with start,mid and end section and merging it
+{
+	int i=start; //index for first half array
+	int j=mid+1; //index for second half array
+	int k=start; //index for final sorted array
+	int c[1000]; //temp array where sorted elements would be kept
+	
+	while(i<=mid && j<=end) //as the first half and second half are already sorted so the first element of each array is compared and are added to the sorted final array c
+	{
+		if(a[i]<a[j])
+		{
+			c[k]=a[i];
+			k++;
+			i++;
+		}
+		else
+		{
+			c[k]=a[j];
+			k++;
+			j++;
+		}
+	
+	}
+	while(i<=mid)//this is done to copy the remaining leftover elements to the sorted array c
+	{
+		c[k]=a[i];
+		k++;
+		i++;
+	}
+	while(j<=end)//this is done to copy the remaining leftover elements to the sorted array c
+	{
+		c[k]=a[j];
+		k++;
+		j++;
+	}
+	for(i=start;i<k;i++) //copying final array to the original array
+		a[i]=c[i];
+}
+
+
+void mergesort(int *a,int start,int end) 
+{
+	if(start<end)// if array contain more than one elements
+	{
+		int mid=(start+end)/2; //Find the middle point of array which is to be divided in two equal half
+		mergesort(a,start,mid);//Mergesort for unsorted first half
+		mergesort(a,mid+1,end);//Mergesort for unsorted second half 
+		merge(a,start,mid,end);//Merging the sorted first and second half
+	}
+		
+}
+
+int main()
+{
+	int n;
+	printf("Enter no. of elements: ");
+	scanf("%d",&n);
+	
+	int a[n],search;
+	
+	printf("\nUnsorted Merge Sort:\n\n"); 
+	
+	for(int i=0;i<n;i++)
+	{
+		a[i]=rand()%1000;//this will generate all the random number between 0 to 999 
+		printf("%d ",a[i]);
+	}
+	mergesort(a,0,n-1); //calling of mergesort
+	
+	printf("\n\n Sorted array is : \n\n");
+	for(int i=0;i<n;i++)
+	{
+		printf("%d ",a[i]);
+	}
+	{printf("\n");}
+	
+}
