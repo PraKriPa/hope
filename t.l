@@ -562,4 +562,675 @@ REJECTED
 shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ 
 */
 
+Subset of C
+
+	%{
+		#include<stdio.h>
+		FILE *fp;
+		int flag=0;
+		char var[20];
+	%}
+	letter [a-zA-Z]
+	digit [0-9] 
+	%%
+
+		['#'][" "".""<"a-z">"]* { printf("\n%s : Header",yytext); }
+		['{'] {printf("\n%s : Start of Block",yytext);}
+		['}'] {printf("\n%s : End of Block",yytext);}
+		"void"|"int"|"double"|"float"|
+		"auto"|"break"|"case"|"const"|
+		printf("\n%s : Keyword",yytext);}
+		"printf"|"scanf" { printf("\n%s : Built in function",yytext);}
+		[a-z]+['('][a-z" "","]*[')'] { printf("\n%s : Function",yytext);}
+		[a-z|"_"]+[a-z0-9"_"]*"["[0-9]
+		[a-z|_]+[a-z0-9_]* { printf("\n%s : Variable",yytext);}
+		";" {printf("\n%s : Delimiter",yytext);}
+
+		"*"|"+"|"-"|"/" { printf("\n%s : Arithmatic Operator”,yytext);}
+
+		{digit}*{letter}*"$"{digit}*{
+		{digit}*{letter}*"]"{digit}*{
+		{digit}*{letter}*"("{digit}*{
+		{digit}*{letter}*")"{digit}*{
+		{digit}*{letter}*"#"{digit}*{
+		{digit}*{letter}*"."{digit}*{
+		{digit}*{letter}*"\""{digit}*{
+		{digit}*{letter}*"\\"{digit}*{
+		{digit}*{letter}*","{digit}*{
+		{digit}+{letter}+ {printf("\n%s : Invalid variable name ",yytext); }
+	
+		"%d" |
+		"%s" |
+		"%c" |
+		"%f" |
+		"%e" {printf("\n%s : is a format specifier",yytext); }
+		. {printf("");}
+	%%
+
+	void main()
+	{
+		fp=fopen("a.c","r");
+		yyin = fp;
+		yylex();
+	}
+
+Input:- sk.c
+	#include <stdio.h> 
+	int sum(int a,int b)
+	{
+		printf("%d", a+b);
+	} 
+	int main()
+	{
+		int a[]; 
+		float b$a;
+		int b; 
+		return a; 
+	}
+
+Output:-
+	apr@ubuntu:~$ lex 5.l
+	apr@ubuntu:~$ cc lex.yy.c -ll
+	apr@ubuntu:~$ ./a.out
+	#include <stdio.h> : Header
+	int : Data Type
+	sum(int a,int b) : Function
+	{ : Start of Block
+	printf : Built in function
+	%d : is a format specifier
+	a : Variable
+	+ : Arithmatic Operator
+	b : Variable
+	; : Delimiter
+	} : End of Block
+	int : Data Type
+	main() : Function
+	{ : Start of Block
+	int : Data Type
+	a[] : Array
+	; : Delimiter
+	float : Data Type
+	b$a : Invalid variable name 
+	; : Delimiter
+	int : Data Type
+	b : Variable
+	; : Delimiter
+	return : Keyword
+	a : Variable
+	; : Delimiter
+	} : End of Block
+Quicksort
+
+#include<iostream>
+#include<stdlib.h>
+#include<time.h>
+#include<omp.h>
+
+using namespace std;
+int n;
+
+
+int partition(int a[],int low,int high)//array its low and high
+{
+        
+	int pivot=a[high];	//making pivot position to be highest
+	int i=low-1,j,temp; //assigning i to low-1
+	for(j=low;j<high;j++)//traversing j to low to high
+	{
+		if(a[j] <= pivot)
+		{
+			i++;
+			temp=a[i];//swapping based on pivot
+			a[i]=a[j];
+			a[j]=temp;
+		}
+	}
+	//finally swapping with exact position of pivot elements  
+	temp=a[i+1];
+	a[i+1]=a[high];
+	a[high]=temp;
+	
+	return i+1;
+}
+void quicksortparallel(int arr[],int low,int high)
+{
+	if(low<high)//if size of array is atleast 1
+	{
+		int pi=partition(arr,low,high);//getting the index position of pivot after placeing in its final position
+		#pragma omp parallel//The omp parallel sections directive effectively combines the omp parallel and omp sections directives. This directive lets you define a parallel region containing a single sections directive in one step
+		{
+			quicksortparallel(arr,low,pi-1);//calling quiksort for left sub array before pivot
+			quicksortparallel(arr,pi+1,high);//calling quicksort for right sub array after pivot
+			
+		}
+	}
+}
+void quicksortserial(int arr[],int low,int high)
+{
+	if(low<high)
+	{
+			int pi=partition(arr,low,high);//getting the index position of pivot after placeing in its final position
+			quicksortserial(arr,low,pi-1);//calling quiksort for left sub array before pivot
+			quicksortserial(arr,pi+1,high);//calling quicksort for right sub array after pivot
+			
+		
+	}
+}
+int main()
+{
+	
+	cout<<"\nEnter total number of elements : ";
+	cin>>n;
+	
+	int a[n],b[n]; //a array for serial and b array for parallel
+	
+	for(int i=0;i<n;i++)
+        {
+        	a[i]=rand()%1000;//a[i] will contain any random value from 0-999
+        	b[i]=a[i];//same number is copy to b array
+        }
+        
+        clock_t start_t, end_t, total_t;
+        
+        start_t=clock();
+	quicksortserial(a,0,n-1); //Calling Serial quick sort array
+	end_t=clock();
+	cout<<"\n\nSorted Array in serial is\n\n";
+	for(int i=0;i<n;i++)
+        {
+        	cout<<a[i]<<" ";
+        }
+        cout<<"\n\nTime taken in serial is "<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<" seconds\n"; //calculating time in serial array
+        
+        start_t=clock();
+	quicksortparallel(b,0,n-1);
+	end_t=clock();
+	cout<<"\n\nSorted Array in parallel is\n\n";//calling Parallel quick sort array
+	for(int i=0;i<n;i++)
+        {
+        	cout<<b[i]<<" ";
+        }
+        cout<<"\n\nTime taken in parallel is "<<(double)(end_t-start_t)/CLOCKS_PER_SEC<<" seconds\n";
+}
+
+/*  OUTPUT
+
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ g++ quick.cpp 
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ ./a.out 
+
+Enter total number of elements : 1000
+
+
+Sorted Array in serial is
+
+0 0 2 2 4 6 8 9 10 11 11 12 16 17 17 18 19 21 21 21 21 22 23 25 27 27 28 29 30 30 30 31 32 33 34 36 36 36 39 40 41 42 42 42 43 43 46 47 49 49 50 51 52 53 54 55 57 57 57 58 59 59 59 60 62 63 67 67 69 71 71 72 73 74 74 80 81 81 81 81 81 82 82 84 84 84 84 86 87 87 88 90 90 90 91 93 94 95 97 97 97 98 99 100 100 105 107 109 109 114 115 116 117 117 120 121 122 122 123 124 124 125 126 126 127 127 127 127 128 130 131 131 133 134 134 135 136 137 139 139 142 143 144 147 149 149 150 151 152 153 154 154 155 157 157 157 159 159 163 167 168 170 171 171 172 172 172 173 176 177 178 179 179 179 181 181 181 183 184 188 189 189 189 190 190 190 193 195 195 196 197 197 198 199 199 202 202 204 205 205 205 206 207 209 210 211 211 211 214 215 217 217 218 218 219 222 223 224 224 225 226 226 227 228 228 228 229 231 231 231 232 232 233 234 234 235 235 236 237 237 238 244 245 248 249 250 253 253 254 255 255 258 259 260 261 262 262 266 266 269 269 269 270 270 270 272 273 274 275 276 278 278 280 281 281 282 283 283 284 285 285 286 289 289 290 291 291 292 292 292 294 296 297 297 298 298 299 299 301 301 303 303 304 305 305 306 308 308 309 309 310 311 312 312 313 314 314 315 317 320 321 321 324 324 324 325 325 326 327 328 333 334 335 335 335 336 336 336 337 338 338 338 339 340 340 340 340 342 342 343 343 346 346 347 348 348 350 350 350 353 355 355 355 358 358 360 360 362 363 363 364 365 365 367 367 367 368 368 368 368 368 369 370 372 373 375 376 376 377 378 378 379 379 379 379 379 382 382 383 385 386 386 388 390 390 393 393 395 396 398 398 399 403 403 404 404 404 407 412 412 412 413 414 415 415 416 417 417 418 421 421 421 422 422 425 426 426 427 428 428 428 429 429 431 432 433 433 434 434 435 436 437 437 438 440 441 443 443 444 444 445 445 451 452 456 457 458 459 460 460 462 464 465 466 467 468 470 471 474 476 478 479 481 483 483 483 485 486 486 487 488 490 490 491 491 492 492 493 494 497 497 498 499 499 500 500 500 503 503 504 504 505 505 506 506 506 507 512 516 516 518 518 521 522 522 524 524 525 525 526 528 528 528 528 528 529 529 529 530 532 532 535 536 537 537 538 538 539 539 540 541 542 542 543 545 550 551 551 552 552 555 555 556 559 560 560 563 563 566 566 567 567 567 567 568 569 569 570 570 571 573 573 574 574 577 578 579 580 581 582 582 583 584 586 586 587 587 589 590 590 590 593 593 593 595 596 599 600 601 603 604 605 606 606 607 610 610 611 613 613 614 614 618 618 618 619 620 621 621 622 622 624 624 625 626 626 627 629 630 631 633 637 637 639 639 640 640 641 641 643 644 647 647 648 649 651 651 652 653 657 657 658 659 660 661 661 667 668 669 672 672 675 676 677 677 681 681 682 682 682 683 683 684 685 685 685 686 688 689 690 690 691 692 697 698 699 699 701 703 705 708 708 708 709 710 710 711 713 713 713 714 715 715 717 720 720 721 722 722 723 723 725 726 728 729 729 729 729 730 732 732 732 735 736 736 739 740 743 743 743 744 746 746 747 748 750 753 754 754 754 756 756 757 759 761 762 763 763 763 764 764 768 769 770 770 771 772 773 774 775 776 776 776 776 776 777 777 782 783 783 784 784 786 787 788 788 789 791 793 793 794 794 795 795 796 796 797 797 801 802 804 805 805 805 805 806 808 808 810 811 812 813 813 814 814 815 818 818 818 819 819 820 821 822 825 826 827 828 829 829 830 836 839 839 840 841 842 846 846 847 848 849 850 850 850 851 853 856 856 856 857 857 857 857 858 858 859 860 860 862 862 862 865 865 868 868 871 872 873 873 873 875 878 881 882 884 886 886 887 888 888 888 890 890 892 892 892 894 895 898 898 898 899 899 900 902 902 904 904 904 904 907 908 910 911 914 915 916 917 917 918 919 919 920 921 921 924 924 925 925 926 926 927 928 928 929 930 930 931 932 932 933 933 934 936 936 939 940 943 944 945 946 947 949 949 950 950 951 952 954 954 954 955 955 955 956 958 959 959 961 962 963 964 965 967 969 970 970 971 972 973 975 976 977 977 980 981 981 982 982 984 984 987 987 988 989 990 990 991 993 993 994 994 996 996 996 996 996 997 999 
+
+Time taken in serial is 0.000397 seconds
+
+
+Sorted Array in parallel is
+
+0 0 2 2 4 6 8 9 10 11 11 12 16 17 17 18 19 21 21 21 21 22 23 25 27 27 28 29 30 30 30 31 32 33 34 36 36 36 39 40 41 42 42 42 43 43 46 47 49 49 50 51 52 53 54 55 57 57 57 58 59 59 59 60 62 63 67 67 69 71 71 72 73 74 74 80 81 81 81 81 81 82 82 84 84 84 84 86 87 87 88 90 90 90 91 93 94 95 97 97 97 98 99 100 100 105 107 109 109 114 115 116 117 117 120 121 122 122 123 124 124 125 126 126 127 127 127 127 128 130 131 131 133 134 134 135 136 137 139 139 142 143 144 147 149 149 150 151 152 153 154 154 155 157 157 157 159 159 163 167 168 170 171 171 172 172 172 173 176 177 178 179 179 179 181 181 181 183 184 188 189 189 189 190 190 190 193 195 195 196 197 197 198 199 199 202 202 204 205 205 205 206 207 209 210 211 211 211 214 215 217 217 218 218 219 222 223 224 224 225 226 226 227 228 228 228 229 231 231 231 232 232 233 234 234 235 235 236 237 237 238 244 245 248 249 250 253 253 254 255 255 258 259 260 261 262 262 266 266 269 269 269 270 270 270 272 273 274 275 276 278 278 280 281 281 282 283 283 284 285 285 286 289 289 290 291 291 292 292 292 294 296 297 297 298 298 299 299 301 301 303 303 304 305 305 306 308 308 309 309 310 311 312 312 313 314 314 315 317 320 321 321 324 324 324 325 325 326 327 328 333 334 335 335 335 336 336 336 337 338 338 338 339 340 340 340 340 342 342 343 343 346 346 347 348 348 350 350 350 353 355 355 355 358 358 360 360 362 363 363 364 365 365 367 367 367 368 368 368 368 368 369 370 372 373 375 376 376 377 378 378 379 379 379 379 379 382 382 383 385 386 386 388 390 390 393 393 395 396 398 398 399 403 403 404 404 404 407 412 412 412 413 414 415 415 416 417 417 418 421 421 421 422 422 425 426 426 427 428 428 428 429 429 431 432 433 433 434 434 435 436 437 437 438 440 441 443 443 444 444 445 445 451 452 456 457 458 459 460 460 462 464 465 466 467 468 470 471 474 476 478 479 481 483 483 483 485 486 486 487 488 490 490 491 491 492 492 493 494 497 497 498 499 499 500 500 500 503 503 504 504 505 505 506 506 506 507 512 516 516 518 518 521 522 522 524 524 525 525 526 528 528 528 528 528 529 529 529 530 532 532 535 536 537 537 538 538 539 539 540 541 542 542 543 545 550 551 551 552 552 555 555 556 559 560 560 563 563 566 566 567 567 567 567 568 569 569 570 570 571 573 573 574 574 577 578 579 580 581 582 582 583 584 586 586 587 587 589 590 590 590 593 593 593 595 596 599 600 601 603 604 605 606 606 607 610 610 611 613 613 614 614 618 618 618 619 620 621 621 622 622 624 624 625 626 626 627 629 630 631 633 637 637 639 639 640 640 641 641 643 644 647 647 648 649 651 651 652 653 657 657 658 659 660 661 661 667 668 669 672 672 675 676 677 677 681 681 682 682 682 683 683 684 685 685 685 686 688 689 690 690 691 692 697 698 699 699 701 703 705 708 708 708 709 710 710 711 713 713 713 714 715 715 717 720 720 721 722 722 723 723 725 726 728 729 729 729 729 730 732 732 732 735 736 736 739 740 743 743 743 744 746 746 747 748 750 753 754 754 754 756 756 757 759 761 762 763 763 763 764 764 768 769 770 770 771 772 773 774 775 776 776 776 776 776 777 777 782 783 783 784 784 786 787 788 788 789 791 793 793 794 794 795 795 796 796 797 797 801 802 804 805 805 805 805 806 808 808 810 811 812 813 813 814 814 815 818 818 818 819 819 820 821 822 825 826 827 828 829 829 830 836 839 839 840 841 842 846 846 847 848 849 850 850 850 851 853 856 856 856 857 857 857 857 858 858 859 860 860 862 862 862 865 865 868 868 871 872 873 873 873 875 878 881 882 884 886 886 887 888 888 888 890 890 892 892 892 894 895 898 898 898 899 899 900 902 902 904 904 904 904 907 908 910 911 914 915 916 917 917 918 919 919 920 921 921 924 924 925 925 926 926 927 928 928 929 930 930 931 932 932 933 933 934 936 936 939 940 943 944 945 946 947 949 949 950 950 951 952 954 954 954 955 955 955 956 958 959 959 961 962 963 964 965 967 969 970 970 971 972 973 975 976 977 977 980 981 981 982 982 984 984 987 987 988 989 990 990 991 993 993 994 994 996 996 996 996 996 997 999 
+
+Time taken in parallel is 0.000395 seconds
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ 
+shubham CL1 $ 
+*/
+
+Write a program to implement Binary Search in C++/ Java/ Python/Scala using Divide and Conquer Strategy
+
+#include <iostream>
+using namespace std;
+
+int binarySearch(int a[],int s, int f, int l)
+{
+  if (l >= f)  
+  {  
+      int mid = (f + l) / 2;
+
+      if (s == a[mid])
+        return mid;
+
+      else if (s < a[mid])
+        return binarySearch(a, s, f, mid - 1);
+
+      else 
+        return binarySearch(a, s, mid + 1, l);
+   }
+   else
+     return -1;
+}
+
+int main()
+{
+  
+  int n,s;
+  cout<<"\n Enter The No. of Elements in array = ";
+  cin>>n; 
+
+  int a[n];
+  cout<<"Enter The Elements=\n";
+  for(int i=0;i<n;i++)
+	cin>>a[i];
+
+  int f= 0;		//first element position
+  int l = n-1;		//last element position in array
+
+  cout << "Please enter a number to find: " << endl;
+  cin >> s;
+
+  int res = binarySearch(a, s, f, l);
+  if ( res == -1 )
+  {
+      cout << "number not found" <<endl;
+  }
+  else
+  {
+      cout <<" number is found in position " << res + 1 << endl;
+  }
+
+  return 0;
+}
+
+MergeSort
+
+#include<stdlib.h>
+#include<stdio.h>
+#include<time.h>
+// First subarray is arr[l..m]
+// Second subarray is arr[m+1..r]
+void merge(int arr[], int l, int m, int r)
+{
+	int i, j, k;
+	int n1 = m - l + 1; 	//size of left array
+	int n2 = r - m; 		//size of right array
+	int L[n1], R[n2];
+	for (i = 0; i < n1; i++)
+	L[i] = arr[l + i];
+	for (j = 0; j < n2; j++)
+	R[j] = arr[m + 1+ j];
+	// arr[l..r]
+	i = 0; 			// Initial index of first subarray
+	j = 0; 			// Initial index of second subarray
+	k = l; 			// Initial index of merged subarray
+	while (i < n1 && j < n2)
+	{
+		if (L[i] <= R[j])
+		{
+			arr[k] = L[i];
+			i++;
+		}
+		else
+		{
+			arr[k] = R[j];
+			j++;
+		}
+		k++;
+	}
+	while (i < n1)	 /* Copy the remaining elements of L[], if there are any */
+	{
+		arr[k] = L[i];
+		i++;
+		k++;
+	}
+	while (j < n2) 	/* Copy the remaining elements of R[], if there are any */
+	{
+		arr[k] = R[j];
+		j++;
+		k++;
+	}
+}
+void mergeSort(int arr[], int l, int r)
+{
+	if (l < r)
+	{
+		int m = l+(r-l)/2;
+		mergeSort(arr, l, m);
+		mergeSort(arr, m+1, r);
+		merge(arr, l, m, r);
+	}
+}
+int main()
+{
+	time_t t;
+	//Intializes random number generator
+	srand((unsigned) time(&t));
+	int N, i, element, ch;
+	printf("Enter the number of elements: \n");
+	scanf("%d",&N);
+	int arr[N];
+	int arr_size = N;
+	do
+	{
+		printf("\nTaking %d input randomly\n",N);
+		for(i = 0 ; i < N ; i++ )
+		arr[i] = rand()%10000;
+		printf("Sorting");
+		clock_t begin = clock();
+		mergeSort(arr, 0, arr_size - 1);
+		clock_t end = clock();
+		double time1 = difftime(end, begin)/3600;
+		printf("\nTime required is : %f\n",time1);
+		printf("Do you want to continue (Yes=1, No=0) : ");
+		scanf("%d",&ch);
+	}
+	while(ch == 1);
+	return 0;
+}
+
+Output :-
+
+100 elements
+
+sourabh@sourabh-VPCEL15EN:~CL1$ gcc merge.c
+sourabh@sourabh-VPCEL15EN:~CL1$ ./a.out
+Enter the number of elements:
+100
+Taking 100 input randomly
+Sorting
+Time required is : 0.005833
+Do you want to continue (Yes=1, No=0) : 1
+Taking 100 input randomly
+Sorting
+Time required is : 0.004167
+Do you want to continue (Yes=1, No=0) : 1
+Taking 100 input randomly
+Sorting
+Time required is : 0.007778
+Do you want to continue (Yes=1, No=0) : 0
+
+1000 elements
+sourabh@sourabh-VPCEL15EN:~CL1$ ./a.out
+Enter the number of elements:
+1000
+Taking 1000 input randomly
+Sorting
+Time required is : 0.058889
+Do you want to continue (Yes=1, No=0) : 1
+Taking 1000 input randomly
+Sorting
+Time required is : 0.050000
+Do you want to continue (Yes=1, No=0) : 1
+Taking 1000 input randomly
+Sorting
+Time required is : 0.051944
+Do you want to continue (Yes=1, No=0) : 0
+
+10000 elements
+sourabh@sourabh-VPCEL15EN:~CL1$ ./a.out
+Enter the number of elements:
+10000
+Taking 10000 input randomly
+Sorting
+Time required is : 0.663611
+Do you want to continue (Yes=1, No=0) : 1
+Taking 10000 input randomly
+Sorting
+Time required is : 0.587222
+Do you want to continue (Yes=1, No=0) : 1
+Taking 10000 input randomly
+Sorting
+Time required is : 0.705000
+Do you want to continue (Yes=1, No=0) : 0
+
+KNN
+
+#include<iostream>
+#include<fstream>
+#include<math.h>
+using namespace std;
+
+class data
+{
+	public:
+		float sLen,sWid,pLen,pWid,dist; //sepal length,sepal width,petal length ,petal width
+		string fSpecies; //featured species
+};
+int main()
+{
+	int k;
+	cout<<"\nEnter value of k(nearest neighbour to be compared): ";
+	cin>>k;
+	
+	data d[150],test; //d[150] as there are total 150 data set in iris
+	
+	cout<<"Enter the testdata(for identification of species using knn):\nSepal Length:  ";
+	cin>>test.sLen;
+	cout<<"Sepal Width: ";
+	cin>>test.sWid;
+	cout<<"Petal Length: ";
+	cin>>test.pLen;
+	cout<<"Petal Width: ";
+	cin>>test.pWid;
+	
+	
+	ifstream in;
+	in.open("iris.csv");
+	
+	//Taking input from iris file
+	for(int i=0;i<150;i++)
+	{
+		in>>d[i].sLen>>d[i].sWid>>d[i].pLen>>d[i].pWid>>d[i].fSpecies;	
+	}
+	
+	//calculating distance from test data set to each data set in iris
+	float dist[4];
+	for(int i=0;i<150;i++)
+	{
+		//cout<<d[i].sLen<<" "<<d[i].sWid<<" "<<d[i].pLen<<" "<<d[i].pWid<<"\n";
+		dist[0]=test.sLen-d[i].sLen;
+		dist[1]=test.sWid-d[i].sWid;
+		dist[2]=test.pLen-d[i].pLen;
+		dist[3]=test.pWid-d[i].pWid;
+		
+		d[i].dist=sqrt(dist[0]*dist[0]+dist[1]*dist[1]+dist[2]*dist[2]+dist[3]*dist[3]);	
+	}
+	
+	//Sorting the data set according to distance in bubble sort
+	data temp;
+	for(int i=0;i<150;i++)
+	{
+		for(int j=0;j<149;j++)
+		{
+			if(d[j].dist>d[j+1].dist)	
+			{
+				temp=d[j];
+				d[j]=d[j+1];
+				d[j+1]=temp;
+			}
+		}
+	}
+	//Displaying the data set
+	cout<<"\n Data Sets according to increase in distance\n\n";
+	for(int i=0;i<150;i++)
+	{
+		cout<<d[i].sLen<<" "<<d[i].sWid<<" "<<d[i].pLen<<" "<<d[i].pWid<<" "<<d[i].fSpecies<<" "<<d[i].dist<<"\n";
+	}
+	
+	//Finding the nearest neighbour through count of each species
+	int setCnt=0,verCnt=0,virCnt=0;
+	for(int i=0;i<k;i++)
+	{
+		if(d[i].fSpecies=="Iris-setosa,")
+			setCnt++;
+		else if (d[i].fSpecies=="Iris-versicolor,")
+			verCnt++;
+		else
+			virCnt++;
+	}
+	cout<<"\n"<<setCnt<<" "<<verCnt<<" "<<virCnt<<"\n";
+	
+	//Displaying test dataset as the species according to maximum number of nearest neighbour species
+	if(setCnt>verCnt && setCnt>virCnt)
+            cout<<"\nThe class predicted for test data is: Iris-setosa";
+        else if(verCnt>setCnt && verCnt>virCnt)
+            cout<<"\nThe class predicted for test data is: Iris-versicolor";
+        else if(virCnt>verCnt && virCnt>setCnt)
+            cout<<"\nThe class predicted for test data is: Iris-virginica";
+        else
+        	cout<<"\nThe class can't be predicted for test data!";
+	cout<<"\n\n";
+	
+	
+}
+
+PROBLEM STATEMENT :- Write a Program for Intermediate Code Generation for subset of C (If loop) using 					LEX & YACC
+ CODE
+
+// LEX FILE :-
+
+%{
+ #include<stdio.h>
+ #include<ctype.h>	
+ #include<stdlib.h>
+#include<string.h>
+ #include "y.tab.h" 
+%}
+
+%%
+"if"		{strcpy(yylval.cval,yytext);return IF;}
+[0-9]+		{yylval.dval=atoi(yytext);return DIGIT;}
+[a-z]+		{strcpy(yylval.cval,yytext);return ID;}
+"("|")"		{return *yytext;}
+[{]		{strcpy(yylval.cval,yytext);return STCB;}
+[}]		{strcpy(yylval.cval,yytext);return ENCB;}
+"<"|">"		{strcpy(yylval.cval,yytext);return RELOP;}	
+[=]		{strcpy(yylval.cval,yytext);return EQUAL;}
+[+-]		{strcpy(yylval.cval,yytext);return PLUS;}
+[;]		{strcpy(yylval.cval,yytext);return SEMI;}
+%%
+
+
+
+
+// YACC FILE :-
+
+%{
+#include<stdio.h>
+#include<ctype.h>
+#include<stdlib.h>
+#include<string.h>
+/*#include "lex.yy.c"*/
+struct icode
+{
+  char op1[20],op2[20],opr[20],result[20];
+  //int indx;
+};
+int icnt=1;
+struct icode ic[10];
+int var;
+char tmp[20];
+void add_into_table(char op1[20],char op2[20],char opr[20],char result[20]); 
+void disp();
+void yyerror(char *s);
+int yywrap();
+%}
+%union { char cval[10];
+	  int dval;	
+	}
+%token<cval> ID IF STCB ENCB RELOP SEMI EQUAL PLUS
+%token<dval> DIGIT
+%type<cval> S D E B A S1 
+%left PLUS
+%%
+
+S:EXP	{disp();}
+    ;
+EXP:D'('E')'B
+   ;
+D:IF	
+ ; 
+E:ID RELOP ID	{
+	          add_into_table($1,$3,$2,"t");
+                  var=icnt+2;   //icnt=2
+		  sprintf(tmp,"%d",var);
+		  add_into_table("t","--","IF",tmp);
+		}
+  ;
+B:STCB S1 ENCB		{
+				  sprintf(tmp,"%d",icnt);		
+				  strcpy(ic[3].result,tmp);
+				}
+  ;         
+S1:ID EQUAL A SEMI		{add_into_table("tx","--","=",$1);}//icnt=5
+  ;
+A:ID	{strcpy($$,$1);}
+ |DIGIT	{sprintf(tmp,"%d",$1);
+         strcpy($$,tmp);}
+ |A PLUS A	{var=icnt+3;
+		 sprintf(tmp,"%d",var);
+		 add_into_table("--","--","goto",tmp);  //icnt=4
+		 add_into_table($1,$3,$2,"tx");		
+		} 
+ ;
+%%
+
+void add_into_table(char op1[20],char op2[20],char opr[20],char result[20])
+ { 
+   strcpy(ic[icnt].op2,op2);
+   strcpy(ic[icnt].op1,op1);	
+   strcpy(ic[icnt].opr,opr);
+    strcpy(ic[icnt].result,result);
+      icnt++; 
+   printf("Entry Added");
+ }
+
+void disp()
+ {
+    int i,temp1,temp_indx;
+  printf("\nQUADRUPLE  FORM");
+  printf("\n---------------");
+  printf("\nS.NO\tOperator\tOperand1\tOperand2\tResult\n\n");
+   for(i=1;i<=icnt;i++)
+    {
+      printf("%d\t",i);	
+      printf("%s\t\t",ic[i].opr);
+      printf("%s\t\t",ic[i].op1);
+      printf("%s\t\t",ic[i].op2);
+      printf("%s\t\t",ic[i].result);
+      printf("\n"); 
+    }	 
+ }
+int main()
+{
+yyparse();
+return 0;
+}
+
+void yyerror(char *s)
+{
+printf("\n%s",s);
+}
+
+int yywrap()
+{
+ return 1;
+}
+
+
+// OUTPUT :- 
+
+ccompl10-08@ccompl10-08:~/Desktop$ lex icg.l
+ccompl10-08@ccompl10-08:~/Desktop$ yacc icg.y -d
+ccompl10-08@ccompl10-08:~/Desktop$ gcc lex.yy.c y.tab.c -ll -ly
+ccompl10-08@ccompl10-08:~/Desktop$ ./a.out
+if(a<b)
+Entry AddedEntry Added
+{
+   a=a+b;
+ Entry AddedEntry  Added
+}
+
+
+QUADRUPLE  FORM
+---------------
+S.NO	Operator	Operand1	Operand2	Result
+
+1	<		a		b		t		
+2	IF		t		--		4		
+3	goto		--		--		6		
+4	+		a		b		tx		
+5	=		tx		--		a		
+6	
+
 
