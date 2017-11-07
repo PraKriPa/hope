@@ -477,4 +477,89 @@ sqrt(16);
 shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1/Final$
 */
 
-	
+Parser.l
+
+%{
+	#include "y.tab.h" //including the header file where token(eg FOR,EQU etc) definition is define
+%}
+
+%%
+for {return FOR;}
+"=" {return EQU;}
+"++" {return INC;}
+-- {return DEC;}
+"<=" {return LE;}
+>= {return GE;}
+"<" {return LT;}
+> {return GT;}
+!= {return NE;}
+== {return EQ;}
+"(" {return OPBR;}
+")" {return CLBR;}
+";" {return SEMIC;}
+[0-9]+ {yylval.p=atoi(yytext);//ASCII to integer conversion of yytext
+	 return NUM;} 
+[int |float |double |long ]*[a-zA-Z]+ { return ID;}
+%%
+
+
+parser.y
+
+%{
+	#include<stdio.h>
+	#include<stdlib.h>
+	//To avoid the warning we include the below definitions
+	int yylex();
+	void yyerror(const char *s);
+%}
+%union
+{
+	double p;
+}
+//Declaration of tokens
+%token FOR EQU INC DEC LE GE LT GT NE EQ OPBR CLBR SEMIC NUM ID
+//Operator precedence(in ascending order) and associativity 
+%right EQU
+%left GE NE LT GT LE EQ
+//RULES
+%%
+
+S: ST {printf("\nACCEPTED\n");
+	exit(0);}//if starting symbol is reached it means it is accepted
+ST: FOR OPBR exp1 SEMIC exp2 SEMIC exp3 CLBR  //for(exp1;exp2;exp3)
+    | FOR OPBR SEMIC SEMIC CLBR   //for(;;)
+exp1: ID EQU ID // eg a=b
+    | ID EQU NUM// eg a=1
+exp2: ID RELOP ID 
+    | ID RELOP NUM
+exp3: ID INC
+    | ID DEC
+RELOP : LT
+	| GT
+	| LE
+	| GE
+	| NE
+	| EQ
+	;
+%%
+int main()
+{
+	yyparse();//start the parsing
+}
+void yyerror(const char *s){printf("\nREJECTED\n");}//if it doesn't reaches start symbol the line is rejected
+/* OUTPUT
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ lex parser.l 
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ yacc -d parser.y    (-d is to make y.tab.h file in same directory)
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ gcc  lex.yy.c y.tab.c -ll (-ll include the lex library so that yywrap error can be removed)
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ ./a.out 
+for(int i=0;i<4;i++)
+
+ACCEPTED
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ ./a.out 
+for(i=0,i<4;i++)
+,
+REJECTED
+shubham@shubham-HP-15-Notebook-PC:~/Desktop/CL1$ 
+*/
+
+
