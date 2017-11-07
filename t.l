@@ -1,3 +1,5 @@
+Find and replace
+
 %{
 	#include<stdio.h>
 	#include<string.h>
@@ -39,3 +41,40 @@ int main(int argc, char **argv)
 
 int yywrap()
 {return 1;}
+
+Average of numbers
+
+%{
+	#include<stdio.h>
+	#include<math.h>
+	#include<string.h>
+	int sum=0, n=0, val=0;
+	FILE *r;
+%}
+
+%%
+[0-9] {
+	  printf("\nThe numbers are: ");
+	  printf("\n%i\n", atoi(yytext));
+	  sum=sum+atoi(yytext);
+	  n++;
+       }
+[\n] {
+ 	float avg=((float)sum/(float)n);
+ 	printf("\nThe average of the numbers is: %f\n", avg);
+ 	return 0;
+     }
+%%
+
+int main(int argc, char **argv)
+{
+	r=fopen(argv[1],"r+");
+	yyin=r;
+	yylex();
+	fclose(r);
+	return(0);
+}
+
+int yywrap()
+{return(1);}
+
