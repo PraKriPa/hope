@@ -1,0 +1,813 @@
+1
+
+def bubbleSort(a,n) :
+    i = 0
+    while i < n :
+        j = i + 1
+        while j < n :
+            if a[i] > a[j] :
+                temp = a[i]
+                a[i] = a[j]
+                a[j] = temp
+            j = j + 1
+        i = i + 1
+
+print("Enter size of array : ")
+n = int(input())
+print("Enter unsorted elements of array : ")
+a = [] # take care - python doesn't have arrays (lists are used instead)
+i = 0
+while i<n :
+    a.append(int(input()))
+    i = i + 1
+
+# a.sort() # sort is built-in for lists - a better option is sorted
+# since size matters, a bubbleSort function is added but a.sort() is more optimal
+bubbleSort(a,n)
+
+
+print("Enter number to be searched : ")
+key = int(input())
+left = 0
+right = n - 1
+mid = (left + right) // 2 # Floor Division
+
+if key not in a:
+    print("Key is absent !")
+else:
+    while left <= right :
+        if a[mid] == key :
+            print("Key was found at position = " + str(mid+1))
+            break
+        elif a[mid] < key :
+            left = mid + 1
+        else :
+            right = mid - 1
+
+mid = (left + right) // 2 # Floor Division 
+
+2
+
+import os, random
+filename = raw_input("Enter the filename: ")+".xml"
+file = open(filename,'w')
+file.write("<Numbers>\n")
+i=0
+while i<15:
+	file.write("\t<integer num = \""+str(random.randint(0,800))+"\" ></integer>\n")
+	i=i+1
+file.write("</Numbers>\n")
+file.close()
+if(input("press 1 to see its contents: ")==1):
+	os.system("cat "+filename)
+if(input("press 2 to run quicksort ")==2):
+	os.system("python qs.py "+filename)
+	
+from xml.etree import ElementTree
+import sys
+from threading import Thread, current_thread
+
+class quick:
+    def read_xml(self,file_path):
+      data = ElementTree.parse(file_path)
+      root = data.getroot()
+      arr = []
+      for num in root.iter('integer'):
+    	arr.append(int(num.attrib.values()[0]))
+      return arr
+
+    def swap(self,arr,first,second):
+    	temp = arr[first]
+    	arr[first] = arr[second]
+    	arr[second] = temp
+
+    def partition(self,arr,low,high):
+    	pivot = arr[low]
+    	self.left= low
+    	self.right = high
+    	while self.left<self.right:
+    		while arr[self.left] < pivot:
+        			self.left = self.left + 1
+    		while arr[self.right] > pivot:
+        			self.right = self.right -1
+    		self.swap(arr,self.left,self.right)
+    	return self.right
+
+    def quicksort(self,arr,low,high):
+        if low >= high:
+            return
+        self.pivot = self.partition(arr, low, high)
+        t =Thread(target = self.quicksort, args = (arr, low, self.pivot - 1))
+        t.start()
+        t.join()
+        t1=Thread(target = self.quicksort, args = (arr, self.pivot + 1, high))
+        t1.start()
+        t1.join()
+        return arr
+
+if __name__ == '__main__':
+    obj = quick()
+    arr = obj.read_xml(sys.argv[1]);
+    result = obj.quicksort(arr, 0, len(arr)-1)
+print result
+
+3
+
+m.py
+from flask import Flask
+from flask import request
+from flask import render_template
+import booth
+
+app=Flask(__name__)
+
+@app.route('/')
+
+def my_form():
+	return render_template('mf.html')
+	
+@app.route('/', methods=['POST'])
+
+def my_form_post():
+	text1=request.form['text1']
+	text2=request.form['text2']
+	
+	
+	return "<h1>"+(str(booth.booth(int(text1), int(text2), 8, 8)))+"</h1>"
+	
+app.run()
+
+booth.py
+from bitstring import BitArray
+
+'''
+   Returns m * r using Booth's algorithm.
+   x = len(m) and y = len(r). Note that this is the length in base 2.
+'''
+def booth(m, r, x, y):
+	# Initialize
+	totalLength = x + y + 1
+	mA = BitArray(int = m, length = totalLength)
+	A = mA << (y+1)
+	S = BitArray(int = -m, length = totalLength)  << (y+1)
+	P = BitArray(int = r, length = y)
+	P.prepend(BitArray(int = 0, length = x))
+	P = P << 1
+	print "Initial values"
+	print "A", A.bin
+	print "S", S.bin
+	print "P", P.bin
+	print "Starting calculation"
+	for i in range(1,y+1):
+		if P[-2:] == '0b01':
+			P = BitArray(int = P.int + A.int, length = totalLength)
+			print "P +  A:", P.bin
+		elif P[-2:] == '0b10':
+			P = BitArray(int = P.int +S.int, length = totalLength)
+			print "P +  S:", P.bin
+		P = arith_shift_right(P, 1)
+		print "P >> 1:", P.bin
+	P = arith_shift_right(P, 1)
+	print "P >> 1:", P.bin
+	return P.int
+
+def arith_shift_right(x, amt):
+	l = x.len
+	x = BitArray(int = (x.int >> amt), length = l)
+	return x
+
+if __name__ == "__main__":
+	print("")
+	
+mf.html
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <h1>Enter multiplicand and multiplier</h1>
+    <form action="." method="POST">
+        <input type="text" name="text1">
+        <input type="text" name="text2">
+        <input type="submit" name="my-form" value="Calculate !">
+    </form>
+</body>
+</html>
+
+4
+
+load.py
+from pymongo import MongoClient
+
+f=open('data.txt').read().strip().split("\n")
+connection=MongoClient("localhost",27017)
+db=connection.test.diniraw7
+
+for line in f:
+	record=line.strip().split(",")
+	post={"ph_no":int(record[0]),"temp":int(record[1])}
+	db.insert(post)
+	
+dine.py
+from pymongo import MongoClient
+import threading
+from threading import Thread
+import time
+
+class phil(Thread):
+	connection=MongoClient("localhost",27017)
+	def read_m(self,indexx):
+		db=phil.connection.test.diniraw7
+		cursor=db.find({"ph_no":indexx})
+		print cursor[0]
+
+	def __init__(self,indexx,name,leftf,rightf):
+		Thread.__init__(self)
+		self.name=name
+		self.indexx=indexx
+		self.leftf=leftf
+		self.rightf=rightf
+
+	def run(self):
+		while(self.running==True):
+			time.sleep(6)
+			print 'Philosopher %d is hungry'%self.indexx
+			self.get_fork()
+
+	def get_fork(self):
+		fork1=self.leftf
+		fork2=self.rightf
+
+		while(self.running==True):
+			fork1.acquire(True)
+			val=fork2.acquire(False)
+			if val:
+				break
+
+			fork1.release()
+			fork1,fork2=fork2,fork1
+		else:
+			return
+		self.dine()
+		fork1.release()
+		fork2.release()
+
+	def dine(self):
+		print "Philosopher %d is finally eating"%self.indexx
+		self.read_m(self.indexx)
+		time.sleep(5)
+		print "Philosopher %d has finally finished eating"%self.indexx
+def dining():
+	fork=[]
+	for i in range(5):
+		fork.append(threading.Lock())
+	names=("a","b","c","d","e")
+	phils=[]
+	for i in range(5):
+		phils.append(phil(i,names[i],fork[i%5],fork[(i+1)%5]))
+	phil.running=True
+	for p in phils:
+		p.start()
+	time.sleep(30)
+	print "Finishing!"
+	phil.running=False
+
+dining()		
+
+7
+
+sc.py
+import string # string module is shipped with python by default
+
+def apparentlyMaturePlagiarismChecker(text1 , text2) :
+    cleanCharacters = string.letters + string.digits + "- "   # removing all punctuations and stuff other than - and space and of course letters and alphabets
+
+    cleanString1 = filter(lambda c: c in cleanCharacters, text1)
+    cleanString2 = filter(lambda c: c in cleanCharacters, text2)
+
+    bagOfSupposedlycleanWords1 = cleanString1.split() # split() removes all kinds of white space (spaces,tabs,newlines and what not)
+    bagOfSupposedlycleanWords2 = cleanString2.split()
+
+#====================================================
+# OPTIONAL - remove these common words so that Plagiarism won't be detected because of high content of these common words
+# this means that the Plagiarism checker will consider all other (uncommon) words
+# Example - if you don't remove these common words,then the following texts ->
+# "Apsara is a good eraser"
+# "Apsara is not a rubber"
+# will show plagiarism (because 'is' and 'a' are matching) although the statements are very very different indeed
+    if "is" in bagOfSupposedlycleanWords1 : bagOfSupposedlycleanWords1.remove("is")
+    if "the" in bagOfSupposedlycleanWords1 : bagOfSupposedlycleanWords1.remove("the")
+    if "a" in bagOfSupposedlycleanWords1 : bagOfSupposedlycleanWords1.remove("a")
+    if "in" in bagOfSupposedlycleanWords1 : bagOfSupposedlycleanWords1.remove("in")
+
+    if "is" in bagOfSupposedlycleanWords2 : bagOfSupposedlycleanWords2.remove("is")   # bet you didn't know 'if' could be written like this
+    if "the" in bagOfSupposedlycleanWords2 : bagOfSupposedlycleanWords2.remove("the")
+    if "a" in bagOfSupposedlycleanWords2 : bagOfSupposedlycleanWords2.remove("a")
+    if "in" in bagOfSupposedlycleanWords2 : bagOfSupposedlycleanWords2.remove("in")
+# i've just added a few word, you can add more
+#======================================================
+    # so essentially we'll be comparing how many words in these 2 lists will match
+    # this is called bag of words checking
+    kitneWordsCopyKiye = len(set(bagOfSupposedlycleanWords1) & set(bagOfSupposedlycleanWords2)) # this gets us the length of the set that is the intersection of the two sets - effectively giving us the count of common words
+    similarityFlag = False
+    smallerLength = 0
+
+    if len(bagOfSupposedlycleanWords1) <= len(bagOfSupposedlycleanWords2) :
+        smallerLength = len(bagOfSupposedlycleanWords1)
+    else :
+        smallerLength = len(bagOfSupposedlycleanWords2)
+
+    if kitneWordsCopyKiye >= (0.5 * smallerLength) :
+        similarityFlag = True
+
+    return similarityFlag
+
+
+if __name__ == "__main__":
+	print("")
+	
+pc.py
+from flask import Flask
+from flask import request
+from flask import render_template
+import stringComparison
+
+app = Flask(__name__)
+
+@app.route('/')
+def my_form():
+    return render_template("mf.html")
+
+@app.route('/', methods=['POST'])
+def my_form_post():
+
+    text1 = request.form['text1']
+    text2 = request.form['text2']
+    plagiarismDetected = stringComparison.apparentlyMaturePlagiarismChecker(text1,text2)
+    if plagiarismDetected is True :
+        return "<h1>Plagiarism Detected !</h1>"
+    else :
+        return "<h1>No Plagiarism Detected !</h1>"
+
+if __name__ == '__main__':
+	app.run()
+	
+mf.html
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <h1>Enter the texts to be compared</h1>
+    <form action="." method="POST">
+        <input type="text" name="text1">
+        <input type="text" name="text2">
+        <input type="submit" name="my-form" value="Check !">
+    </form>
+</body>
+</html>
+
+8
+8q.py
+#from pprint import pprint
+import json
+board = []
+board1=[['_' for i in range(8)]for j in range(8)]
+#size = 8
+cnt=0
+
+def isSafe(row, col):
+    """ Return if there is a danger by placing queen in
+        a given row, col
+    """
+    for (i, j) in board:
+        if row == i: 
+            return False
+        if col == j: 
+            return False
+        if abs(row - i) == abs(col - j): 
+            return False
+
+    return True
+    
+def placequeen(row):
+    if row > size:
+        global cnt
+        cnt+=1
+        #print board
+        print "\nSOLUTION ",cnt
+        for (i,j) in board:
+            board1[i-1][j-1]='Q'
+        
+        for i in range(size):
+            for j in range(size):
+                print board1[i][j],
+            print 
+
+        for i in range(size):
+            for j in range(size):
+                board1[i][j]="_"
+            
+    else:
+        for col in range(1, size + 1):
+            if isSafe(row, col):
+                board.append((row, col))
+                placequeen(row + 1)
+                board.remove((row,col))
+
+#if __name__ == "__main__":
+data=[]
+    
+with open('board.json') as f:
+     data=json.load(f)
+    
+if(data["start"]<0 or data["start"]>7):
+   print "Invalid JSON input"
+   exit()
+else:
+   size = data["size"]
+   placequeen(1)
+    #print (qw)
+    
+    #placequeen(1)
+
+board.json
+{
+	"size":8,
+	"start":0
+}
+
+9
+dict1 = {"a":0,"b":1,"c":2,"d":3,"e":4,"f":5,"g":6,"h":7,"i":8,"j":9,"k":10,
+		 "l":11,"m":12,"n":13,"o":14,"p":15,"q":16,"r":17,"s":18,"t":19,"u":20,
+		 "v":21,"w":22,"x":23,"y":24,"z":25}
+
+dict2 = {0:"a",1:"b",2:"c",3:"d",4:"e",5:"f",6:"g",7:"h",8:"i",9:"j",10:"k",
+		11:"l",12:"m",13:"n",14:"o",15:"p",16:"q",17:"r",18:"s",19:"t",20:"u",
+		21:"v",22:"w",23:"x",24:"y",25:"z"}
+
+
+
+def encrypt(pt,key):
+	ct=[]
+	for i in pt:
+		if i in dict1:
+			ct.append(dict2[(dict1[i]+key)%26])
+		else:
+			ct.append(i)
+	return ct
+
+def decrypt(ct,key):
+	pt=[]
+	for i in ct:
+		if i in dict1:
+			pt.append(dict2[(dict1[i]-key)%26])
+		else:
+			pt.append(i)
+	return pt
+
+
+def main():
+	choice = 0
+	while choice!=3:
+		choice = input("1.Encryption\n2.Decryption\n3.Exit\n")
+
+		if choice==1:
+
+			pt = raw_input("Enter plaintext: ").lower()
+			key = input("Enter key: ")
+			res = encrypt(pt,key)
+			print "".join(res)
+
+		elif choice==2:
+			ct = raw_input("Enter ciphertext: ").lower()
+			key = input("Enter key: ")
+			res = decrypt(ct,key)
+			print "".join(res)
+
+
+if __name__=="__main__":
+	main()
+	
+10
+key_matrix=[[0]*5 for i in range(5)]
+
+
+def getLocation(ele):
+	x,y=0,0
+	for i in range(5):
+		for j in range(5):
+			if key_matrix[i][j]==ele:
+				x=i
+				y=j
+				break
+	return x,y
+
+def generateMatrix(key):
+	matrix=[]
+
+	for i in key:
+		if i not in matrix:
+			matrix.append(i)
+
+	alphabet="ABCDEFGHIKLMNOPQRSTUVWXYZ"
+
+	for i in alphabet:
+		if i not in matrix:
+			matrix.append(i)
+
+	print matrix
+
+	#creating a 2d matrix
+	key_matrix[0]=matrix[0:5]
+	key_matrix[1]=matrix[5:10]
+	key_matrix[2]=matrix[10:15]
+	key_matrix[3]=matrix[15:20]
+	key_matrix[4]=matrix[20:25]
+
+
+
+def properFormat(pt):
+	pt = pt.replace(" ", "")
+	npt = []
+	for i in pt:
+		npt.append(i)
+	i=0
+	
+	for i in range(int(len(npt)-1)):
+		if (i+1)%2!=0:
+			if npt[i]==npt[i+1]:
+				npt.insert(i+1,"X")
+				i=i+2
+	'''
+	while i<int(len(npt)-1):
+		if (i+1)%2!=0:
+			if npt[i]==npt[i+1]:
+				npt.insert(i+1,"X")
+				i=i+2
+		i+=1
+	'''
+	if len(npt)%2==1:
+		npt.append("X")
+
+	print npt
+	return npt
+
+
+def playfair(pt,key,mode):
+	ct=[]
+	#converting plaintext to proper format
+	pt = properFormat(pt)
+	#creating matrix
+	generateMatrix(key)
+	#encrypt/decrypt
+	i=0
+	while i<len(pt):
+		#getlocation
+		x1,y1=getLocation(pt[i])
+		x2,y2=getLocation(pt[i+1])
+
+		print "POSITION: ",(x1,y1,x2,y2)
+
+		#same row
+		
+
+		if x1==x2:
+			if mode=="e":
+				ct.append(key_matrix[x1][(y1+1)%5])
+				ct.append(key_matrix[x2][(y2+1)%5])
+			elif mode=="d":
+				ct.append(key_matrix[x1][(y1-1)%5])
+				ct.append(key_matrix[x2][(y2-1)%5])
+
+		elif y1==y2:
+			if mode=="e":
+				ct.append(key_matrix[(x1+1)%5][y1])
+				ct.append(key_matrix[(x2+1)%5][y2])
+			elif mode=="d":
+				ct.append(key_matrix[(x1-1)%5][y1])
+				ct.append(key_matrix[(x2-1)%5][y2])
+		else:
+			ct.append(key_matrix[x1][y2])
+			ct.append(key_matrix[x2][y1])
+		i=i+2
+	return ct
+
+
+
+def main():
+	choice = 0
+	while choice!=3:
+		choice=input("1.Encryption\n2.Decryption\n3.Exit\n")
+
+		if choice==1:
+			pt = raw_input("Enter plaintext: ").upper()
+			key = raw_input("Enter key: ").upper()
+			res = playfair(pt,key,"e")
+			print "".join(res)
+
+		elif choice==2:
+			ct = raw_input("Enter ciphertext: ").upper()
+			key = raw_input("Enter key: ").upper()
+			res = playfair(ct,key,"d")
+			if "X" in res:
+				res.remove("X")
+			print "".join(res)
+
+
+
+if __name__=="__main__":
+	main()
+	
+11
+client.py
+import socket
+import hashlib
+import random
+
+s = socket.socket()
+s.connect(("localhost", 8888))
+receivedString = s.recv(4096)
+message = receivedString.split("\t")[:-6]
+message = "\t".join([word for word in message])
+print "\nReceived Message: ", message
+
+p = int(receivedString.split("\t")[-6])
+q = int(receivedString.split("\t")[-5])
+g = int(receivedString.split("\t")[-4])
+A = int(receivedString.split("\t")[-3])
+r = int(receivedString.split("\t")[-2])
+s = int(receivedString.split("\t")[-1])
+
+print "\nPublic Key received is: "
+print "p = ", p
+print "q = ", q
+print "g = ", g
+print "A = ", A
+print "\nDigital Signature received is: \n( r = ", r, ",\n s = ", s, " )"
+
+#finding HASH of message
+hashObject = hashlib.sha1(message)
+hexDig = hashObject.hexdigest()
+hashInt = int(hexDig, 16)
+
+#finding sInverse
+#find modular multiplicative inverse of s
+sInverse = 0
+while(s*sInverse % q != 1):
+	sInverse = random.randint(1, q)
+
+#Verification of Digital Signature
+v = 0
+if((r>=1 and r<=q-1) and (s>=1 and s<=q-1)):
+	u1 = (sInverse * hashInt) % q
+	u2 = (r * sInverse) % q
+v = ( ( pow(g, u1, p) * pow(A, u2, p) ) % p ) % q
+print "\nv = ", v
+if(v == r):
+	print "Here, v = r"
+	print "\nHence, Digital Signature Verified and Accepted!!\n"
+else:
+	print "\nDigital Signature can't be Verified, hence, Rejected!!\n"
+
+server.py
+import socket
+import hashlib
+import time
+import math
+from Crypto.Util import number
+import random
+
+s = socket.socket()
+s.bind(("localhost", 8888))
+s.listen(5)
+c, addr = s.accept()
+print ("Connected to client ", addr)
+message = raw_input("Enter message:")
+
+#finding HASH of message
+hashObject = hashlib.sha1(message)
+hexDig = hashObject.hexdigest()
+hashInt = int(hexDig, 16)
+
+#KEY GENERATION
+p=0
+q=0
+g=0
+A=0
+a=0
+q = number.getPrime(8) #8 is bit length for 'q'
+while True:
+	p = number.getPrime(64) #64 bit length for 'p'
+	if( (p-1) % q == 0):
+		break
+while True:
+	x = random.randint(1, p) #take {1, ...., p-1}
+	g = pow(x, ((p-1)/q), p) #find value of 'g'
+	if ( g != 1 ):
+		break
+		
+a = random.randint(0, q) #take {0, ...., q-1} private key is 'a'
+A = pow(g, a, p)#find public key 'A'
+
+#public key is (p, q, g, A)
+print "Public Key is: "
+print "p =", p
+print "q =", q
+print "g =", g
+print "A =", A
+
+#SIGNING
+r = 0
+
+s = 0
+while True:
+	k = random.randint(1, q) #take {1, ...., q-1}
+	r = pow(g, k, p) % q	
+	if( r != 0 ):
+		break
+			
+#find modular multiplicative inverse of k
+kInverse = 0
+while(k*kInverse % q != 1):
+	kInverse = random.randint(1, q)
+	s = kInverse * (hashInt + a * r) % q
+
+#signature of message is (r, s)
+print "\nDigital Signature of message is: \n( r = ", r, ",\n s = ", s, " )"
+
+#send the message, public key and digital signature to Client
+c.send(message+"\t"+str(p)+"\t"+str(q)+"\t"+str(g)+"\t"+str(A)+"\t"+str(r)+"\t"+str(s))
+c.close()
+
+12
+import random
+def miillerTest(d,n):
+    
+    a = random.randint(2, n-1)
+    y = pow(a,d,n)
+    x = y
+    if (x == 1  or x == n-1):
+       return True
+ 
+    while (d != n-1):
+        x = (x * x) % n
+        d *= 2
+        if (x == 1):
+             return False
+        if (x == n-1):
+            return True
+                
+    return False
+
+def isPrime(n,k):
+
+    if (n <= 1 or n == 4):
+      	return False
+    if (n <= 3): 
+    	return True
+ 
+    d = n - 1
+    while (d % 2 == 0):
+        d /= 2
+
+    for i in range(k):
+         if (miillerTest(d, n) == False):
+              return False
+ 
+    return True
+
+def main():
+
+    n=input('Enter number to check : \n')
+    k=input('Enter k : \n')
+    if (isPrime(n, k)):
+        print ("Yes")
+    else:
+    	print ("No")
+
+main()
+
+14
+def fence(text, key):
+    fence = [[""] * len(text) for n in range(key)]
+    print fence
+    rails = range(key - 1) + range(key - 1, 0, -1)
+    print rails
+    for count, x in enumerate(text):
+        fence[rails[count % len(rails)]][count] = x
+        print fence
+
+    if 0: # debug
+        for rail in fence:
+            print ''.join('.' if c is None else str(c) for c in rail)
+
+    return [c for rail in fence for c in rail if c is not None]
+
+def encode(text, key):
+    return ''.join(fence(text, key))
+
+if __name__=="__main__":
+	text = raw_input("Enter plaintext : ").replace(" ","")
+	key = input("Enter no. of rails : ")   
+	if key<2:
+		print("Key value should be at least 2!")	
+	elif key>=2:
+		z = encode(text,key) 
+		print z
